@@ -3,15 +3,19 @@ import Joi from 'joi';
 
 import { requestMiddleware } from '../middleware/request';
 
-export const postInteropSchema = Joi.object().keys({
+const postInteropSchema = Joi.object().keys({
   action: Joi.string().valid('status', 'provision', 'message').required(),
+  certs: Joi.when('action', {
+    is: 'provision',
+    then: Joi.array().required(),
+  }),
+  fingerprint: Joi.when('action', {
+    is: 'message',
+    then: Joi.string().required(),
+  }),
 });
 
-interface PostReqBody {
-  action: string;
-}
-
-const post: RequestHandler = async (req: Request<{}, {}, PostReqBody>, res) => {
+const post: RequestHandler = async (req: Request<{}, {}, any>, res) => {
   const { action } = req.body;
 
   res.send({
