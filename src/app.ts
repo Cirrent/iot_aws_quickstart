@@ -1,20 +1,21 @@
-import express, { json } from "express";
-import helmet from "helmet";
-import serverlessHttp from "serverless-http";
+import express, { json } from 'express';
+import helmet from 'helmet';
+import httpStatus from 'http-status';
+import serverlessHttp from 'serverless-http';
 
 const app = express();
 
 app.use(json());
 app.use(helmet());
 
-app.get("/", (_, res) =>
+app.post('/action', (_, res) =>
   res.json({
-    msg: "Hello World",
+    msg: 'Hello World',
   })
 );
 
 app.use((_, res) => {
-  res.status(404).json({ error: "NOT FOUND" });
+  res.sendStatus(httpStatus.NOT_FOUND);
 });
 
 export const handler = serverlessHttp(app);

@@ -30,8 +30,8 @@ functions:
     # reservedConcurrency: 100
     events:
       - httpApi:
-          path: "/{proxy+}"
-          method: "*"
+          path: '/action'
+          method: 'POST'
 
 package:
   individually: true
