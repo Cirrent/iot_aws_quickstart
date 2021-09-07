@@ -1,9 +1,12 @@
 import compression from 'compression';
-import express, { json } from 'express';
+import express, { json, Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import httpStatus from 'http-status';
 import pino from 'pino-http';
 import serverlessHttp from 'serverless-http';
+
+import ApiError from './errors/ApiError';
+import interop from './routes/interop';
 
 const app = express();
 
@@ -18,14 +21,16 @@ app.use(helmet());
 
 app.get('/', (_, res) => res.sendStatus(httpStatus.OK));
 
-app.post('/interop', (_, res) =>
-  res.json({
-    msg: 'Hello World',
-  })
-);
+app.use('/interop', interop);
 
-app.use((_, res) => {
-  res.sendStatus(httpStatus.NOT_FOUND);
+app.use((err: ApiError, _: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  return res.status(err.statusCode || 500).json({
+    error: err.message,
+  });
 });
 
 export const handler = serverlessHttp(app);

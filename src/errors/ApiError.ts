@@ -5,13 +5,14 @@ export default class ApiError extends Error {
 
   constructor(
     statusCode: number,
-    message: string,
+    message?: string,
     isOperational = true,
     stack?: string
   ) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
+
     if (stack) {
       this.stack = stack;
     } else {
