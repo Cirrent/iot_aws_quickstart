@@ -2,18 +2,13 @@ import compression from 'compression';
 import express, { json, Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import httpStatus from 'http-status';
-import pino from 'pino-http';
 import serverlessHttp from 'serverless-http';
 
 import ApiError from './errors/ApiError';
 import interop from './routes/interop';
 
-const app = express();
-
-const logger = pino();
+export const app = express();
 const comp = compression();
-
-app.use(logger);
 
 app.use(comp);
 app.use(json());
