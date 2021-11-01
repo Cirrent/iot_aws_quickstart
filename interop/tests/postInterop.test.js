@@ -8,7 +8,7 @@ const {
   RegisterCertificateWithoutCACommand,
   CreateThingCommand,
   AttachThingPrincipalCommand,
-  DescribeEndpointCommand
+  DescribeEndpointCommand,
 } = require("@aws-sdk/client-iot");
 
 const { app } = require("../src/app");
@@ -122,6 +122,42 @@ describe("Check interop routes", () => {
         },
       ]);
     });
+    test(`should return ${httpStatus.OK} with provision action with DescribeEndpointCommand error`, async () => {
+      IoTClientMock.on(RegisterCertificateWithoutCACommand).resolves({
+        certificateArn: "path::to::cert",
+        certificateId: "1234",
+      });
+      IoTClientMock.on(CreateThingCommand).resolves({
+        thingName: "1234",
+      });
+      IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
+      IoTClientMock.on(DescribeEndpointCommand).rejects();
+
+      const token = await genToken();
+      const body = {
+        action: "provision",
+        certs: [
+          {
+            ref: "a",
+            cert: testCert,
+          },
+        ],
+      };
+
+      const res = await request(app)
+        .post("/interop")
+        .set("Authorization", token)
+        .send(body);
+
+      expect(res.statusCode).toEqual(httpStatus.OK);
+      expect(res.body).toEqual([
+        {
+          ref: "a",
+          status: "SUCCESS",
+          endpoint: null,
+        },
+      ]);
+    });
     test(`should return ${httpStatus.OK} with provision action where certificate already exists`, async () => {
       IoTClientMock.on(RegisterCertificateWithoutCACommand).rejects({
         name: "ResourceAlreadyExistsException",
@@ -158,6 +194,41 @@ describe("Check interop routes", () => {
           ref: "a",
           status: "SUCCESS",
           endpoint: "local-mocked",
+        },
+      ]);
+    });
+    test(`should return ${httpStatus.OK} with provision action with RegisterCertificateWithoutCACommand error`, async () => {
+      IoTClientMock.on(RegisterCertificateWithoutCACommand).rejects();
+      IoTClientMock.on(CreateThingCommand).resolves({
+        thingName: "1234",
+      });
+      IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
+      IoTClientMock.on(DescribeEndpointCommand).resolves({
+        endpointAddress: "local-mocked",
+      });
+
+      const token = await genToken();
+      const body = {
+        action: "provision",
+        certs: [
+          {
+            ref: "a",
+            cert: testCert,
+          },
+        ],
+      };
+
+      const res = await request(app)
+        .post("/interop")
+        .set("Authorization", token)
+        .send(body);
+
+      expect(res.statusCode).toEqual(httpStatus.OK);
+      expect(res.body).toEqual([
+        {
+          ref: "a",
+          status: "ERROR",
+          message: "Failed creating and registering thing",
         },
       ]);
     });
@@ -207,6 +278,40 @@ describe("Check interop routes", () => {
           message: "Cannot decode certitifcate",
         },
       ]);
+    });
+    test(`should return ${httpStatus.OK} with status action`, async () => {
+      const token = await genToken();
+      const body = {
+        action: "status",
+      };
+
+      const res = await request(app)
+        .post("/interop")
+        .set("Authorization", token)
+        .send(body);
+
+      expect(res.statusCode).toEqual(httpStatus.OK);
+      expect(res.body).toEqual({
+        message: "Not yet implemented.",
+        action: "status",
+      });
+    });
+    test(`should return ${httpStatus.OK} with message action`, async () => {
+      const token = await genToken();
+      const body = {
+        action: "message",
+      };
+
+      const res = await request(app)
+        .post("/interop")
+        .set("Authorization", token)
+        .send(body);
+
+      expect(res.statusCode).toEqual(httpStatus.OK);
+      expect(res.body).toEqual({
+        message: "Not yet implemented.",
+        action: "message",
+      });
     });
   });
 });

@@ -25,10 +25,6 @@ const postInteropSchema = Joi.object().keys({
       })
     ),
   }),
-  fingerprint: Joi.when("action", {
-    is: "message",
-    then: Joi.string().required(),
-  }),
 });
 
 async function post(req, res, next) {
@@ -36,54 +32,83 @@ async function post(req, res, next) {
 
   if (action === "provision") {
     const { certs } = req.body;
-    let resp = [];
 
-    const endpoint = await getEndpoint();
+    const resp = await provision(certs);
 
-    for (const item of certs) {
-      let certBuf;
-      let parsedCert;
+    return res.send(resp);
+  } else if (action === "message") {
+    const resp = await message();
 
-      try {
-        certBuf = Buffer.from(item.cert, "base64");
-        parsedCert = pki.certificateFromPem(certBuf.toString("ascii"), true);
-      } catch (err) {
-        resp.push({
-          ref: item.ref,
-          status: "ERROR",
-          message: "Cannot decode certitifcate",
-        });
-        continue;
-      }
-
-      try {
-        await createAndRegisterThing(
-          certBuf.toString("ascii"),
-          parsedCert.serialNumber
-        );
-
-        resp.push({
-          ref: item.ref,
-          status: "SUCCESS",
-          endpoint: endpoint,
-        });
-      } catch (err) {
-        resp.push({
-          ref: item.ref,
-          status: "ERROR",
-          message: "Failed creating and registering thing",
-        });
-        continue;
-      }
-    }
+    return res.send(resp);
+  } else if (action === "status") {
+    const resp = await status();
 
     return res.send(resp);
   }
 
-  return res.send({
+  return res.status(501).send({
     message: "Not yet implemented.",
     action,
   });
+}
+
+async function status() {
+  return {
+    message: "Not yet implemented.",
+    action: "status",
+  };
+}
+
+async function message() {
+  return {
+    message: "Not yet implemented.",
+    action: "message",
+  };
+}
+
+async function provision(certs) {
+  let resp = [];
+
+  const endpoint = await getEndpoint();
+
+  for (const item of certs) {
+    let certBuf;
+    let parsedCert;
+
+    try {
+      certBuf = Buffer.from(item.cert, "base64");
+      parsedCert = pki.certificateFromPem(certBuf.toString("ascii"), true);
+    } catch (err) {
+      resp.push({
+        ref: item.ref,
+        status: "ERROR",
+        message: "Cannot decode certitifcate",
+      });
+      continue;
+    }
+
+    try {
+      await createAndRegisterThing(
+        certBuf.toString("ascii"),
+        parsedCert.serialNumber
+      );
+
+      resp.push({
+        ref: item.ref,
+        status: "SUCCESS",
+        endpoint: endpoint,
+      });
+    } catch (err) {
+      resp.push({
+        ref: item.ref,
+        status: "ERROR",
+        message: "Failed creating and registering thing",
+      });
+      continue;
+    }
+  }
+
+  return resp;
 }
 
 async function getEndpoint() {
