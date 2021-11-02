@@ -192,7 +192,7 @@ Resources:
                     !Ref "AWS::Region",
                     ":",
                     !Ref "AWS::AccountId",
-                    ":topic/*",
+                    ":topic/iqs/${iot:Connection.Thing.ThingName}",
                   ],
                 ]
           - Effect: Allow
@@ -206,7 +206,7 @@ Resources:
                     !Ref "AWS::Region",
                     ":",
                     !Ref "AWS::AccountId",
-                    ":topic/*",
+                    ":topic/iqs/${iot:Connection.Thing.ThingName}",
                   ],
                 ]
           - Effect: Allow
@@ -220,7 +220,7 @@ Resources:
                     !Ref "AWS::Region",
                     ":",
                     !Ref "AWS::AccountId",
-                    ":topic/*",
+                    ":topic/iqs/${iot:Connection.Thing.ThingName}",
                   ],
                 ]
       PolicyName: cloud_managed_iot_policy
