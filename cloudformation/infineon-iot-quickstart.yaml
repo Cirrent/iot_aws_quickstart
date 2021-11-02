@@ -6,8 +6,8 @@ Resources:
   CopyZips:
     Type: Custom::CopyZips
     Properties:
-      ServiceToken: !GetAtt 'CopyZipsFunction.Arn'
-      DestBucket: !Ref 'CirrentCertificateBucket'
+      ServiceToken: !GetAtt "CopyZipsFunction.Arn"
+      DestBucket: !Ref "CirrentCertificateBucket"
       SourceBucket: cirrent-quickstarts
       Prefix: "lambdas/"
       Objects:
@@ -16,7 +16,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -28,26 +28,26 @@ Resources:
       Policies:
         - PolicyName: lambda-copier
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
                   - s3:GetObject
                 Resource:
-                  - !Sub 'arn:aws:s3:::cirrent-quickstarts/lambdas*'
+                  - !Sub "arn:aws:s3:::cirrent-quickstarts/lambdas*"
               - Effect: Allow
                 Action:
                   - s3:PutObject
                   - s3:DeleteObject
                 Resource:
-                  - !Sub 'arn:aws:s3:::${CirrentCertificateBucket}/lambdas*'
+                  - !Sub "arn:aws:s3:::${CirrentCertificateBucket}/lambdas*"
   CopyZipsFunction:
     Type: AWS::Lambda::Function
     Properties:
       Description: Copies objects from a source S3 bucket to a destination
       Handler: index.handler
       Runtime: python3.7
-      Role: !GetAtt 'CopyZipsRole.Arn'
+      Role: !GetAtt "CopyZipsRole.Arn"
       Timeout: 240
       Code:
         ZipFile: |
@@ -122,9 +122,9 @@ Resources:
       Handler: "src/app.handler"
       Runtime: nodejs14.x
       PackageType: Zip
-      CodeUri: 
-        Bucket: !Ref 'CirrentCertificateBucket'
-        Key: 'lambdas/interop.zip'
+      CodeUri:
+        Bucket: !Ref "CirrentCertificateBucket"
+        Key: "lambdas/interop.zip"
       Policies:
         - AWSIoTThingsRegistration
         - Statement:
@@ -157,8 +157,8 @@ Resources:
         Variables:
           IOT_POLICY: cloud_managed_iot_policy
           S3_BUCKET_NAME_ROOT_CA: !Ref CirrentCertificateBucket
-          THING_ATTRIBUTE_NAME: <ATTRIBUTE_NAME>
           AUDIENCE: !Ref "AWS::AccountId"
+          DEFAULT_TOPIC: "iqs"
       Timeout: 300
       ReservedConcurrentExecutions: 2
   CirrentCloudManagedIoTPolicy:
@@ -225,7 +225,7 @@ Resources:
                 ]
       PolicyName: cloud_managed_iot_policy
 Outputs:
-  AccountId: 
+  AccountId:
     Description: Your AWS account identifier
     Value: !Ref "AWS::AccountId"
   GatewayId:

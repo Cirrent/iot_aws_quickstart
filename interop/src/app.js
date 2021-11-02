@@ -7,7 +7,7 @@ const httpStatus = require("http-status");
 const serverlessHttp = require("serverless-http");
 
 const interop = require("./routes/interop");
-const authMiddleware = require("./middleware/auth");
+const { authMiddleware } = require("./middleware/auth");
 
 const app = express();
 const comp = compression();

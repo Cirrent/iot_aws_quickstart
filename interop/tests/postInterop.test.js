@@ -9,6 +9,8 @@ const {
   CreateThingCommand,
   AttachThingPrincipalCommand,
   DescribeEndpointCommand,
+  AttachPolicyCommand,
+  GetPolicyCommand,
 } = require("@aws-sdk/client-iot");
 
 const { app } = require("../src/app");
@@ -33,6 +35,7 @@ describe("Check interop routes", () => {
 
       expect(res.statusCode).toEqual(httpStatus.BAD_REQUEST);
     });
+
     test(`should return ${httpStatus.BAD_REQUEST} with an invalid action`, async () => {
       const token = await genToken();
       const body = {
@@ -66,6 +69,7 @@ describe("Check interop routes", () => {
 
       expect(res.statusCode).toEqual(httpStatus.BAD_REQUEST);
     });
+
     test(`should return ${httpStatus.BAD_REQUEST} for input without reference`, async () => {
       const token = await genToken();
       const body = {
@@ -84,6 +88,7 @@ describe("Check interop routes", () => {
 
       expect(res.statusCode).toEqual(httpStatus.BAD_REQUEST);
     });
+
     test(`should return ${httpStatus.OK} with provision action`, async () => {
       IoTClientMock.on(RegisterCertificateWithoutCACommand).resolves({
         certificateArn: "path::to::cert",
@@ -95,6 +100,12 @@ describe("Check interop routes", () => {
       IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
       IoTClientMock.on(DescribeEndpointCommand).resolves({
         endpointAddress: "local-mocked",
+      });
+      IoTClientMock.on(AttachPolicyCommand).resolves({
+        $metadata: "test",
+      });
+      IoTClientMock.on(GetPolicyCommand).resolves({
+        policyArn: "testArn",
       });
 
       const token = await genToken();
@@ -119,9 +130,103 @@ describe("Check interop routes", () => {
           ref: "a",
           status: "SUCCESS",
           endpoint: "local-mocked",
+          topic: "iqs",
+          policyApplied: true,
         },
       ]);
     });
+
+    
+    test(`should return ${httpStatus.OK} with provision action with GetPolicyCommand error`, async () => {
+      IoTClientMock.on(RegisterCertificateWithoutCACommand).resolves({
+        certificateArn: "path::to::cert",
+        certificateId: "1234",
+      });
+      IoTClientMock.on(CreateThingCommand).resolves({
+        thingName: "1234",
+      });
+      IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
+      IoTClientMock.on(DescribeEndpointCommand).resolves({
+        endpointAddress: "local-mocked",
+      });
+      IoTClientMock.on(AttachPolicyCommand).resolves({
+        $metadata: "test",
+      });
+      IoTClientMock.on(GetPolicyCommand).rejects();
+
+      const token = await genToken();
+      const body = {
+        action: "provision",
+        certs: [
+          {
+            ref: "a",
+            cert: testCert,
+          },
+        ],
+      };
+
+      const res = await request(app)
+        .post("/interop")
+        .set("Authorization", token)
+        .send(body);
+
+      expect(res.statusCode).toEqual(httpStatus.OK);
+      expect(res.body).toEqual([
+        {
+          ref: "a",
+          status: "SUCCESS",
+          endpoint: "local-mocked",
+          topic: "iqs",
+          policyApplied: false,
+        },
+      ]);
+    });
+
+    test(`should return ${httpStatus.OK} with provision action with no policy`, async () => {
+      IoTClientMock.on(RegisterCertificateWithoutCACommand).resolves({
+        certificateArn: "path::to::cert",
+        certificateId: "1234",
+      });
+      IoTClientMock.on(CreateThingCommand).resolves({
+        thingName: "1234",
+      });
+      IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
+      IoTClientMock.on(DescribeEndpointCommand).resolves({
+        endpointAddress: "local-mocked",
+      });
+      IoTClientMock.on(AttachPolicyCommand).resolves({
+        $metadata: "test",
+      });
+      IoTClientMock.on(GetPolicyCommand).resolves({});
+
+      const token = await genToken();
+      const body = {
+        action: "provision",
+        certs: [
+          {
+            ref: "a",
+            cert: testCert,
+          },
+        ],
+      };
+
+      const res = await request(app)
+        .post("/interop")
+        .set("Authorization", token)
+        .send(body);
+
+      expect(res.statusCode).toEqual(httpStatus.OK);
+      expect(res.body).toEqual([
+        {
+          ref: "a",
+          status: "SUCCESS",
+          endpoint: "local-mocked",
+          topic: "iqs",
+          policyApplied: false,
+        },
+      ]);
+    });
+
     test(`should return ${httpStatus.OK} with provision action with DescribeEndpointCommand error`, async () => {
       IoTClientMock.on(RegisterCertificateWithoutCACommand).resolves({
         certificateArn: "path::to::cert",
@@ -132,6 +237,12 @@ describe("Check interop routes", () => {
       });
       IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
       IoTClientMock.on(DescribeEndpointCommand).rejects();
+      IoTClientMock.on(AttachPolicyCommand).resolves({
+        $metadata: "test",
+      });
+      IoTClientMock.on(GetPolicyCommand).resolves({
+        policyArn: "testArn",
+      });
 
       const token = await genToken();
       const body = {
@@ -155,9 +266,12 @@ describe("Check interop routes", () => {
           ref: "a",
           status: "SUCCESS",
           endpoint: null,
+          topic: "iqs",
+          policyApplied: true,
         },
       ]);
     });
+
     test(`should return ${httpStatus.OK} with provision action where certificate already exists`, async () => {
       IoTClientMock.on(RegisterCertificateWithoutCACommand).rejects({
         name: "ResourceAlreadyExistsException",
@@ -170,6 +284,12 @@ describe("Check interop routes", () => {
       IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
       IoTClientMock.on(DescribeEndpointCommand).resolves({
         endpointAddress: "local-mocked",
+      });
+      IoTClientMock.on(AttachPolicyCommand).resolves({
+        $metadata: "test",
+      });
+      IoTClientMock.on(GetPolicyCommand).resolves({
+        policyArn: "testArn",
       });
 
       const token = await genToken();
@@ -194,9 +314,12 @@ describe("Check interop routes", () => {
           ref: "a",
           status: "SUCCESS",
           endpoint: "local-mocked",
+          topic: "iqs",
+          policyApplied: true,
         },
       ]);
     });
+
     test(`should return ${httpStatus.OK} with provision action with RegisterCertificateWithoutCACommand error`, async () => {
       IoTClientMock.on(RegisterCertificateWithoutCACommand).rejects();
       IoTClientMock.on(CreateThingCommand).resolves({
@@ -205,6 +328,12 @@ describe("Check interop routes", () => {
       IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
       IoTClientMock.on(DescribeEndpointCommand).resolves({
         endpointAddress: "local-mocked",
+      });
+      IoTClientMock.on(AttachPolicyCommand).resolves({
+        $metadata: "test",
+      });
+      IoTClientMock.on(GetPolicyCommand).resolves({
+        policyArn: "testArn",
       });
 
       const token = await genToken();
@@ -232,6 +361,7 @@ describe("Check interop routes", () => {
         },
       ]);
     });
+
     test(`should return ${httpStatus.OK} test 2 certs, one good and one bad`, async () => {
       IoTClientMock.on(RegisterCertificateWithoutCACommand).resolves({
         certificateArn: "path::to::cert",
@@ -243,6 +373,12 @@ describe("Check interop routes", () => {
       IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
       IoTClientMock.on(DescribeEndpointCommand).resolves({
         endpointAddress: "local-mocked",
+      });
+      IoTClientMock.on(AttachPolicyCommand).resolves({
+        $metadata: "test",
+      });
+      IoTClientMock.on(GetPolicyCommand).resolves({
+        policyArn: "testArn",
       });
 
       const token = await genToken();
@@ -271,6 +407,8 @@ describe("Check interop routes", () => {
           ref: "a",
           status: "SUCCESS",
           endpoint: "local-mocked",
+          topic: "iqs",
+          policyApplied: true,
         },
         {
           ref: "b",
@@ -279,6 +417,7 @@ describe("Check interop routes", () => {
         },
       ]);
     });
+
     test(`should return ${httpStatus.OK} with status action`, async () => {
       const token = await genToken();
       const body = {
@@ -296,6 +435,7 @@ describe("Check interop routes", () => {
         action: "status",
       });
     });
+
     test(`should return ${httpStatus.OK} with message action`, async () => {
       const token = await genToken();
       const body = {

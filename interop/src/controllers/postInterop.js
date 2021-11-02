@@ -8,9 +8,12 @@ const {
   CreateThingCommand,
   AttachThingPrincipalCommand,
   DescribeEndpointCommand,
+  AttachPolicyCommand,
+  GetPolicyCommand,
 } = require("@aws-sdk/client-iot");
 
 const requestMiddleware = require("../middleware/request");
+const { iotPolicy, baseTopic } = require("../vars");
 
 const client = new IoTClient();
 
@@ -29,27 +32,26 @@ const postInteropSchema = Joi.object().keys({
 
 async function post(req, res, next) {
   const { action } = req.body;
+  let resp;
 
-  if (action === "provision") {
-    const { certs } = req.body;
+  switch (action) {
+    case "provision": {
+      const { certs } = req.body;
 
-    const resp = await provision(certs);
-
-    return res.send(resp);
-  } else if (action === "message") {
-    const resp = await message();
-
-    return res.send(resp);
-  } else if (action === "status") {
-    const resp = await status();
-
-    return res.send(resp);
+      resp = await provision(certs);
+      break;
+    }
+    case "message": {
+      resp = await message();
+      break;
+    }
+    case "status": {
+      resp = await status();
+      break;
+    }
   }
 
-  return res.status(501).send({
-    message: "Not yet implemented.",
-    action,
-  });
+  res.send(resp);
 }
 
 async function status() {
@@ -70,6 +72,7 @@ async function provision(certs) {
   let resp = [];
 
   const endpoint = await getEndpoint();
+  const policy = await getPolicy();
 
   for (const item of certs) {
     let certBuf;
@@ -90,13 +93,16 @@ async function provision(certs) {
     try {
       await createAndRegisterThing(
         certBuf.toString("ascii"),
-        parsedCert.serialNumber
+        parsedCert.serialNumber,
+        policy
       );
 
       resp.push({
         ref: item.ref,
         status: "SUCCESS",
         endpoint: endpoint,
+        topic: baseTopic,
+        policyApplied: policy,
       });
     } catch (err) {
       resp.push({
@@ -128,9 +134,24 @@ async function getEndpoint() {
   return resp;
 }
 
-async function createAndRegisterThing(cert, serialNum) {
-  if (!cert) throw Error("No certificate provided");
+async function getPolicy() {
+  let resp = false;
 
+  try {
+    const policyCmd = new GetPolicyCommand({
+      policyName: iotPolicy,
+    });
+
+    const policyResp = await client.send(policyCmd);
+    if (policyResp.policyArn) resp = true;
+  } catch (err) {
+    resp = false;
+  }
+
+  return resp;
+}
+
+async function createAndRegisterThing(cert, serialNum, policy) {
   let certArn;
   let certId;
   try {
@@ -164,12 +185,21 @@ async function createAndRegisterThing(cert, serialNum) {
 
   const thingResp = await client.send(thingCmd);
 
-  const policyCmd = new AttachThingPrincipalCommand({
+  if (policy) {
+    const policyCmd = new AttachPolicyCommand({
+      policyName: iotPolicy,
+      target: certArn,
+    });
+
+    await client.send(policyCmd);
+  }
+
+  const principalCmd = new AttachThingPrincipalCommand({
     thingName: thingResp.thingName,
     principal: certArn,
   });
 
-  await client.send(policyCmd);
+  await client.send(principalCmd);
 
   return true;
 }
