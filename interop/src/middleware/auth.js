@@ -1,7 +1,7 @@
 "use strict";
 
 const ApiError = require("../errors/ApiError");
-const { fetchPublicKey } = require("../helpers/fetchPublicKey");
+const { createTokenVerifier } = require("../helpers/crypto");
 const { audience } = require("../vars");
 
 async function authMiddleware(req, _, next) {
@@ -27,7 +27,7 @@ async function authMiddleware(req, _, next) {
   let verify;
 
   try {
-    verify = await fetchPublicKey();
+    verify = await createTokenVerifier();
   } catch (err) {
     return next(new ApiError(401, "Error creating token verifier"));
   }

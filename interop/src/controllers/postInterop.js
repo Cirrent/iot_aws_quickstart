@@ -1,6 +1,5 @@
 "use strict";
 
-const { pki } = require("node-forge");
 const Joi = require("joi");
 const {
   IoTClient,
@@ -13,7 +12,8 @@ const {
 } = require("@aws-sdk/client-iot");
 
 const requestMiddleware = require("../middleware/request");
-const { iotPolicy, baseTopic } = require("../vars");
+const { iotPolicy, baseTopic, thingNamePrefix } = require("../vars");
+const { getSerialNumber, getCertificate } = require("../helpers/crypto");
 
 const client = new IoTClient();
 
@@ -76,11 +76,12 @@ async function provision(certs) {
 
   for (const item of certs) {
     let certBuf;
-    let parsedCert;
+    let cert;
+    let serialNumber;
 
     try {
       certBuf = Buffer.from(item.cert, "base64");
-      parsedCert = pki.certificateFromPem(certBuf.toString("ascii"), true);
+      cert = await getCertificate(certBuf);
     } catch (err) {
       resp.push({
         ref: item.ref,
@@ -91,9 +92,22 @@ async function provision(certs) {
     }
 
     try {
+      serialNumber = await getSerialNumber(cert);
+    } catch (err) {
+      console.log("errserial:", err);
+      resp.push({
+        ref: item.ref,
+        status: "ERROR",
+        message:
+          "Certificate serial cannot be decoded or is incorrect (only alphanumeric/hyphen/underscore)",
+      });
+      continue;
+    }
+
+    try {
       await createAndRegisterThing(
         certBuf.toString("ascii"),
-        parsedCert.serialNumber,
+        serialNumber,
         policy
       );
 
@@ -153,7 +167,6 @@ async function getPolicy() {
 
 async function createAndRegisterThing(cert, serialNum, policy) {
   let certArn;
-  let certId;
   try {
     const regCmd = new RegisterCertificateWithoutCACommand({
       certificatePem: cert,
@@ -163,18 +176,16 @@ async function createAndRegisterThing(cert, serialNum, policy) {
     const regResp = await client.send(regCmd);
 
     certArn = regResp.certificateArn;
-    certId = regResp.certificateId;
   } catch (err) {
     if (err.name == "ResourceAlreadyExistsException") {
       certArn = err.resourceArn;
-      certId = err.resourceId;
     } else {
       throw err;
     }
   }
 
   const thingCmd = new CreateThingCommand({
-    thingName: certId,
+    thingName: `${thingNamePrefix}${serialNum}`,
     attributePayload: {
       attributes: {
         serialNumber: serialNum,

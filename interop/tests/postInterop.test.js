@@ -15,6 +15,9 @@ const {
 
 const { app } = require("../src/app");
 const { genToken } = require("./helpers/genToken");
+const { getSerialNumber, getCertificate } = require("../src/helpers/crypto");
+
+const { thingNamePrefix } = require("../src/vars");
 const IoTClientMock = mockClient(IoTClient);
 
 const testCert =
@@ -50,6 +53,14 @@ describe("Check interop routes", () => {
     });
   });
   describe("POST /interop provision tests", () => {
+    let thingName;
+
+    beforeEach(async () => {
+      let cert = await getCertificate(Buffer.from(testCert, "base64"));
+      let testSerialNum = await getSerialNumber(cert);
+      thingName = `${thingNamePrefix}${testSerialNum}`;
+    });
+
     test(`should return ${httpStatus.BAD_REQUEST} with provision action with invalid (non-base64) cert`, async () => {
       const token = await genToken();
       const body = {
@@ -90,12 +101,14 @@ describe("Check interop routes", () => {
     });
 
     test(`should return ${httpStatus.OK} with provision action`, async () => {
+      const certificateId = "1234";
+
       IoTClientMock.on(RegisterCertificateWithoutCACommand).resolves({
         certificateArn: "path::to::cert",
-        certificateId: "1234",
+        certificateId,
       });
       IoTClientMock.on(CreateThingCommand).resolves({
-        thingName: "1234",
+        thingName,
       });
       IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
       IoTClientMock.on(DescribeEndpointCommand).resolves({
@@ -134,16 +147,20 @@ describe("Check interop routes", () => {
           policyApplied: true,
         },
       ]);
+
+      const createThingCalls = IoTClientMock.commandCalls(CreateThingCommand);
+
+      expect(createThingCalls).toHaveLength(1);
+      expect(createThingCalls[0].args[0].input.thingName).toEqual(thingName);
     });
 
-    
     test(`should return ${httpStatus.OK} with provision action with GetPolicyCommand error`, async () => {
       IoTClientMock.on(RegisterCertificateWithoutCACommand).resolves({
         certificateArn: "path::to::cert",
         certificateId: "1234",
       });
       IoTClientMock.on(CreateThingCommand).resolves({
-        thingName: "1234",
+        thingName,
       });
       IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
       IoTClientMock.on(DescribeEndpointCommand).resolves({
@@ -188,7 +205,7 @@ describe("Check interop routes", () => {
         certificateId: "1234",
       });
       IoTClientMock.on(CreateThingCommand).resolves({
-        thingName: "1234",
+        thingName,
       });
       IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
       IoTClientMock.on(DescribeEndpointCommand).resolves({
@@ -233,7 +250,7 @@ describe("Check interop routes", () => {
         certificateId: "1234",
       });
       IoTClientMock.on(CreateThingCommand).resolves({
-        thingName: "1234",
+        thingName,
       });
       IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
       IoTClientMock.on(DescribeEndpointCommand).rejects();
@@ -279,7 +296,7 @@ describe("Check interop routes", () => {
         certificateId: "1234",
       });
       IoTClientMock.on(CreateThingCommand).resolves({
-        thingName: "1234",
+        thingName,
       });
       IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
       IoTClientMock.on(DescribeEndpointCommand).resolves({
@@ -323,7 +340,7 @@ describe("Check interop routes", () => {
     test(`should return ${httpStatus.OK} with provision action with RegisterCertificateWithoutCACommand error`, async () => {
       IoTClientMock.on(RegisterCertificateWithoutCACommand).rejects();
       IoTClientMock.on(CreateThingCommand).resolves({
-        thingName: "1234",
+        thingName,
       });
       IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
       IoTClientMock.on(DescribeEndpointCommand).resolves({
@@ -368,7 +385,7 @@ describe("Check interop routes", () => {
         certificateId: "1234",
       });
       IoTClientMock.on(CreateThingCommand).resolves({
-        thingName: "1234",
+        thingName,
       });
       IoTClientMock.on(AttachThingPrincipalCommand).resolves({});
       IoTClientMock.on(DescribeEndpointCommand).resolves({
