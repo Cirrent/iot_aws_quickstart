@@ -13,6 +13,8 @@ const iotPolicy = process.env.IOT_POLICY;
 
 const baseTopic = process.env.DEFAULT_TOPIC || "iqs";
 
+const thingNamePrefix = process.env.THING_PREFIX || "Infineon_";
+
 module.exports = {
   verifyCacheKey,
   isLocal,
@@ -20,4 +22,5 @@ module.exports = {
   audience,
   iotPolicy,
   baseTopic,
+  thingNamePrefix,
 };

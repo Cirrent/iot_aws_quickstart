@@ -1,9 +1,17 @@
 "use strict";
 
+/**
+ * @file Helper class for handling cryptography related logics
+ * @author Cirrent Cloud Team
+ */
+
 const { createVerifier } = require("fast-jwt");
 const fs = require("fs");
 const got = require("got");
 const cacheManager = require("cache-manager");
+const { X509 } = require("jsrsasign");
+const Joi = require("joi");
+
 const cache = cacheManager.caching({
   store: "memory",
   max: 10,
@@ -12,7 +20,11 @@ const cache = cacheManager.caching({
 
 const { audience, verifyCacheKey, isLocal, publicKeyURL } = require("../vars");
 
-async function fetchPublicKey() {
+/**
+ * Create token verifier function
+ * @returns {function} token verify function
+ */
+async function createTokenVerifier() {
   let cacheRes = await cache.get(verifyCacheKey);
   if (cacheRes) return cacheRes;
 
@@ -41,4 +53,21 @@ async function fetchPublicKey() {
   }
 }
 
-module.exports = { fetchPublicKey };
+const serialNumberSchema = Joi.string().required();
+
+async function getSerialNumber(certificate) {
+  const serialNumber = certificate.getSerialNumberHex();
+
+  await serialNumberSchema.validateAsync(serialNumber);
+  return serialNumber;
+}
+
+async function getCertificate(certBuf) {
+  const certString = certBuf.toString("ascii");
+  let x509 = new X509();
+  x509.readCertPEM(certString);
+
+  return x509;
+}
+
+module.exports = { createTokenVerifier, getSerialNumber, getCertificate };
