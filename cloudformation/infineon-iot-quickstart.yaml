@@ -160,7 +160,6 @@ Resources:
           AUDIENCE: !Ref "AWS::AccountId"
           DEFAULT_TOPIC: "iqs"
       Timeout: 300
-      ReservedConcurrentExecutions: 2
   CirrentCloudManagedIoTPolicy:
     Type: AWS::IoT::Policy
     Properties:
