@@ -3,13 +3,13 @@
  * @author Cirrent Cloud Team
  */
 
-import { got } from 'got';
-import { createVerifier } from 'fast-jwt';
-import fs from 'fs';
-import cacheManager from 'cache-manager';
-import { X509 } from 'jsrsasign';
-import Joi from 'joi';
-import { audience, verifyCacheKey, isLocal, publicKeyURL } from '../vars.mjs';
+import { got } from "got";
+import { createVerifier } from "fast-jwt";
+import fs from "fs";
+import cacheManager from "cache-manager";
+import { X509 } from "jsrsasign";
+import Joi from "joi";
+import { audience, verifyCacheKey, isLocal, publicKeyURL } from "../vars.mjs";
 
 const cache = cacheManager.caching({
   store: "memory",

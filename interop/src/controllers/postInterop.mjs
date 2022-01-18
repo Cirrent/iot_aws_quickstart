@@ -1,4 +1,4 @@
-import Joi from 'joi';
+import Joi from "joi";
 import {
   IoTClient,
   RegisterCertificateWithoutCACommand,
@@ -7,11 +7,11 @@ import {
   DescribeEndpointCommand,
   AttachPolicyCommand,
   GetPolicyCommand,
-} from '@aws-sdk/client-iot'
+} from "@aws-sdk/client-iot";
 
-import requestMiddleware from '../middleware/request.mjs';
-import { iotPolicy, baseTopic, thingNamePrefix } from '../vars.mjs';
-import { getSerialNumber, getCertificate } from '../helpers/crypto.mjs';
+import requestMiddleware from "../middleware/request.mjs";
+import { iotPolicy, baseTopic, thingNamePrefix } from "../vars.mjs";
+import { getSerialNumber, getCertificate } from "../helpers/crypto.mjs";
 
 const client = new IoTClient();
 

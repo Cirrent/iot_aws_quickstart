@@ -1,6 +1,6 @@
-import fs from 'fs';
+import fs from "fs";
 
-import { createSigner } from 'fast-jwt';
+import { createSigner } from "fast-jwt";
 
 const privateKey = fs.readFileSync("./tests/cert/test-private.key");
 const aud = process.env.AUDIENCE;

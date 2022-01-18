@@ -1,6 +1,6 @@
-import httpStatus from 'http-status';
-import request from 'supertest';
-import { mockClient } from 'aws-sdk-client-mock';
+import httpStatus from "http-status";
+import request from "supertest";
+import { mockClient } from "aws-sdk-client-mock";
 import {
   IoTClient,
   RegisterCertificateWithoutCACommand,
@@ -9,13 +9,13 @@ import {
   DescribeEndpointCommand,
   AttachPolicyCommand,
   GetPolicyCommand,
-} from '@aws-sdk/client-iot';
+} from "@aws-sdk/client-iot";
 
-import { app } from '../src/app.mjs';
-import { genToken } from './helpers/genToken.mjs';
-import { getSerialNumber, getCertificate } from '../src/helpers/crypto.mjs';
+import { app } from "../src/app.mjs";
+import { genToken } from "./helpers/genToken.mjs";
+import { getSerialNumber, getCertificate } from "../src/helpers/crypto.mjs";
 
-import { thingNamePrefix } from '../src/vars.mjs';
+import { thingNamePrefix } from "../src/vars.mjs";
 const IoTClientMock = mockClient(IoTClient);
 
 const testCert =

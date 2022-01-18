@@ -1,6 +1,6 @@
-import { Router } from 'express';
+import { Router } from "express";
 
-import postInteropController from '../controllers/postInterop.mjs';
+import postInteropController from "../controllers/postInterop.mjs";
 
 const router = Router();
 

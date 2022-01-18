@@ -1,7 +1,7 @@
-import httpStatus from 'http-status';
-import request from 'supertest';
+import httpStatus from "http-status";
+import request from "supertest";
 
-import { app } from '../src/app.mjs';
+import { app } from "../src/app.mjs";
 
 describe("Check default routes", () => {
   describe("GET /", () => {

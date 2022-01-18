@@ -1,11 +1,11 @@
-import compression from 'compression';
-import express from 'express';
-import helmet from 'helmet';
-import httpStatus from 'http-status';
-import serverlessHttp from 'serverless-http';
+import compression from "compression";
+import express from "express";
+import helmet from "helmet";
+import httpStatus from "http-status";
+import serverlessHttp from "serverless-http";
 
-import interop from './routes/interop.mjs';
-import { authMiddleware } from './middleware/auth.mjs';
+import interop from "./routes/interop.mjs";
+import { authMiddleware } from "./middleware/auth.mjs";
 
 const app = express();
 const comp = compression();
@@ -32,7 +32,4 @@ app.use((err, _, res, next) => {
 
 const handler = serverlessHttp(app);
 
-export {
-  handler,
-  app,
-};
+export { handler, app };

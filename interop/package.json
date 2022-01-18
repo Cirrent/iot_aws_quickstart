@@ -2,7 +2,7 @@
   "name": "interop",
   "version": "1.0.0",
   "description": "",
-  "main": "src/app.mjs",
+  "main": "app.mjs",
   "scripts": {
     "dev": "npx cross-env AUDIENCE=TestAWSAccount cross-env NODE_ENV=development cross-env IS_LOCAL=1 sls offline start --ignoreJWTSignature --stage offline",
     "test": "npx cross-env AUDIENCE=TestAWSAccount cross-env IS_LOCAL=1 cross-env NODE_OPTIONS=--experimental-vm-modules jest -i --coverage --colors --verbose",

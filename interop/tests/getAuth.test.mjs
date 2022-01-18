@@ -1,8 +1,8 @@
-import httpStatus from 'http-status';
-import request from 'supertest';
+import httpStatus from "http-status";
+import request from "supertest";
 
-import { app } from '../src/app.mjs';
-import { genToken, genExpiredToken } from './helpers/genToken.mjs';
+import { app } from "../src/app.mjs";
+import { genToken, genExpiredToken } from "./helpers/genToken.mjs";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

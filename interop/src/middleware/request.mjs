@@ -1,6 +1,6 @@
-import httpStatus from 'http-status';
+import httpStatus from "http-status";
 
-import ApiError from '../errors/ApiError.mjs';
+import ApiError from "../errors/ApiError.mjs";
 
 const getMessageFromJoiError = (error) => {
   if (!error.details && error.message) {

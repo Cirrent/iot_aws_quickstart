@@ -1,6 +1,6 @@
-import ApiError from '../errors/ApiError.mjs';
-import { createTokenVerifier } from '../helpers/crypto.mjs';
-import { audience } from '../vars.mjs';
+import ApiError from "../errors/ApiError.mjs";
+import { createTokenVerifier } from "../helpers/crypto.mjs";
+import { audience } from "../vars.mjs";
 
 async function authMiddleware(req, _, next) {
   if (!req.headers || !req.headers.authorization) {
