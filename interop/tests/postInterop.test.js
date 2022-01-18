@@ -1,9 +1,7 @@
-"use strict";
-
-const httpStatus = require("http-status");
-const request = require("supertest");
-const { mockClient } = require("aws-sdk-client-mock");
-const {
+import httpStatus from 'http-status';
+import request from 'supertest';
+import { mockClient } from 'aws-sdk-client-mock';
+import {
   IoTClient,
   RegisterCertificateWithoutCACommand,
   CreateThingCommand,
@@ -11,13 +9,13 @@ const {
   DescribeEndpointCommand,
   AttachPolicyCommand,
   GetPolicyCommand,
-} = require("@aws-sdk/client-iot");
+} from '@aws-sdk/client-iot';
 
-const { app } = require("../src/app");
-const { genToken } = require("./helpers/genToken");
-const { getSerialNumber, getCertificate } = require("../src/helpers/crypto");
+import { app } from '../src/app.mjs';
+import { genToken } from './helpers/genToken.mjs';
+import { getSerialNumber, getCertificate } from '../src/helpers/crypto.mjs';
 
-const { thingNamePrefix } = require("../src/vars");
+import { thingNamePrefix } from '../src/vars.mjs';
 const IoTClientMock = mockClient(IoTClient);
 
 const testCert =

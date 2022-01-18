@@ -1,8 +1,6 @@
-"use strict";
+import fs from 'fs';
 
-const fs = require("fs");
-
-const { createSigner } = require("fast-jwt");
+import { createSigner } from 'fast-jwt';
 
 const privateKey = fs.readFileSync("./tests/cert/test-private.key");
 const aud = process.env.AUDIENCE;
@@ -29,4 +27,4 @@ async function genExpiredToken() {
   return "Bearer ".concat(token);
 }
 
-module.exports = { genToken, genExpiredToken };
+export { genToken, genExpiredToken };

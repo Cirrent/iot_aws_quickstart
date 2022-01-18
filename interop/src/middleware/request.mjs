@@ -1,8 +1,6 @@
-"use strict";
+import httpStatus from 'http-status';
 
-const httpStatus = require("http-status");
-
-const ApiError = require("../errors/ApiError");
+import ApiError from '../errors/ApiError.mjs';
 
 const getMessageFromJoiError = (error) => {
   if (!error.details && error.message) {
@@ -29,4 +27,4 @@ const requestMiddleware = (handler, options) => async (req, res, next) => {
   }
 };
 
-module.exports = requestMiddleware;
+export default requestMiddleware;

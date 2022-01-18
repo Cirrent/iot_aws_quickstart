@@ -1,13 +1,11 @@
-"use strict";
+import compression from 'compression';
+import express from 'express';
+import helmet from 'helmet';
+import httpStatus from 'http-status';
+import serverlessHttp from 'serverless-http';
 
-const compression = require("compression");
-const express = require("express");
-const helmet = require("helmet");
-const httpStatus = require("http-status");
-const serverlessHttp = require("serverless-http");
-
-const interop = require("./routes/interop");
-const { authMiddleware } = require("./middleware/auth");
+import interop from './routes/interop.mjs';
+import { authMiddleware } from './middleware/auth.mjs';
 
 const app = express();
 const comp = compression();
@@ -34,7 +32,7 @@ app.use((err, _, res, next) => {
 
 const handler = serverlessHttp(app);
 
-module.exports = {
+export {
   handler,
   app,
 };

@@ -1,5 +1,3 @@
-"use strict";
-
 const verifyCacheKey = "verifier";
 
 const isLocal = process.env.IS_LOCAL && process.env.IS_LOCAL == 1;
@@ -15,7 +13,7 @@ const baseTopic = process.env.DEFAULT_TOPIC || "iqs";
 
 const thingNamePrefix = process.env.THING_PREFIX || "Infineon_";
 
-module.exports = {
+export {
   verifyCacheKey,
   isLocal,
   publicKeyURL,

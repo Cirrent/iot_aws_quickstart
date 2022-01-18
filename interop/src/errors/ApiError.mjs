@@ -1,5 +1,3 @@
-"use strict";
-
 class ApiError extends Error {
   constructor(statusCode, message, isOperational = true, stack) {
     super(message);
@@ -14,4 +12,4 @@ class ApiError extends Error {
   }
 }
 
-module.exports = ApiError;
+export default ApiError

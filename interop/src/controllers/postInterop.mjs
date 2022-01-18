@@ -1,7 +1,5 @@
-"use strict";
-
-const Joi = require("joi");
-const {
+import Joi from 'joi';
+import {
   IoTClient,
   RegisterCertificateWithoutCACommand,
   CreateThingCommand,
@@ -9,11 +7,11 @@ const {
   DescribeEndpointCommand,
   AttachPolicyCommand,
   GetPolicyCommand,
-} = require("@aws-sdk/client-iot");
+} from '@aws-sdk/client-iot'
 
-const requestMiddleware = require("../middleware/request");
-const { iotPolicy, baseTopic, thingNamePrefix } = require("../vars");
-const { getSerialNumber, getCertificate } = require("../helpers/crypto");
+import requestMiddleware from '../middleware/request.mjs';
+import { iotPolicy, baseTopic, thingNamePrefix } from '../vars.mjs';
+import { getSerialNumber, getCertificate } from '../helpers/crypto.mjs';
 
 const client = new IoTClient();
 
@@ -215,6 +213,6 @@ async function createAndRegisterThing(cert, serialNum, policy) {
   return true;
 }
 
-module.exports = requestMiddleware(post, {
+export default requestMiddleware(post, {
   validation: { body: postInteropSchema },
 });

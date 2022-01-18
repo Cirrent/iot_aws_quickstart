@@ -1,24 +1,21 @@
-"use strict";
-
 /**
  * @file Helper class for handling cryptography related logics
  * @author Cirrent Cloud Team
  */
 
-const { createVerifier } = require("fast-jwt");
-const fs = require("fs");
-const got = require("got");
-const cacheManager = require("cache-manager");
-const { X509 } = require("jsrsasign");
-const Joi = require("joi");
+import { got } from 'got';
+import { createVerifier } from 'fast-jwt';
+import fs from 'fs';
+import cacheManager from 'cache-manager';
+import { X509 } from 'jsrsasign';
+import Joi from 'joi';
+import { audience, verifyCacheKey, isLocal, publicKeyURL } from '../vars.mjs';
 
 const cache = cacheManager.caching({
   store: "memory",
   max: 10,
   ttl: 600 /*seconds*/,
 });
-
-const { audience, verifyCacheKey, isLocal, publicKeyURL } = require("../vars");
 
 /**
  * Create token verifier function
@@ -70,4 +67,4 @@ async function getCertificate(certBuf) {
   return x509;
 }
 
-module.exports = { createTokenVerifier, getSerialNumber, getCertificate };
+export { createTokenVerifier, getSerialNumber, getCertificate };

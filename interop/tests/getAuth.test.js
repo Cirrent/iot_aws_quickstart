@@ -1,10 +1,8 @@
-"use strict";
+import httpStatus from 'http-status';
+import request from 'supertest';
 
-const httpStatus = require("http-status");
-const request = require("supertest");
-
-const { app } = require("../src/app");
-const { genToken, genExpiredToken } = require("./helpers/genToken");
+import { app } from '../src/app.mjs';
+import { genToken, genExpiredToken } from './helpers/genToken.mjs';
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
