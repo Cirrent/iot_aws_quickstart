@@ -21,7 +21,7 @@
     "http-status": "^1.5.0",
     "joi": "^17.4.2",
     "jsrsasign": "^10.5.0",
-    "serverless-http": "^2.7.0"
+    "serverless-http": "^3.0.1"
   },
   "devDependencies": {
     "aws-sdk-client-mock": "^0.6.0",
