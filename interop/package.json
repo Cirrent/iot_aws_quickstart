@@ -27,7 +27,7 @@
     "aws-sdk-client-mock": "^0.6.0",
     "cross-env": "^7.0.3",
     "eslint": "^8.1.0",
-    "jest": "^27.3.1",
+    "jest": "^28.0.0",
     "prettier": "^2.5.0",
     "serverless-offline": "^8.2.0",
     "supertest": "^6.1.6"
