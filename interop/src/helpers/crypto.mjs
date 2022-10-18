@@ -10,18 +10,22 @@ import { X509 } from "jsrsasign";
 import Joi from "joi";
 import { audience, verifyCacheKey, publicKeyURL } from "../vars.mjs";
 
-const cache = await caching(
-  memoryStore({
-    max: 10,
-    ttl: 600 /* seconds */,
-  })
-);
+let cache;
 
 /**
  * Create token verifier function
  * @returns {function} token verify function
  */
 async function createTokenVerifier() {
+  if (!cache) {
+    cache = await caching(
+      memoryStore({
+        max: 10,
+        ttl: 600 /* seconds */,
+      })
+    );
+  }
+
   let cacheRes = await cache.get(verifyCacheKey);
   if (cacheRes) return cacheRes;
 
