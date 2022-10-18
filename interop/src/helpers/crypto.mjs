@@ -5,17 +5,17 @@
 
 import { got } from "got";
 import { createVerifier } from "fast-jwt";
-import fs from "fs";
-import cacheManager from "cache-manager";
+import { caching, memoryStore } from "cache-manager";
 import { X509 } from "jsrsasign";
 import Joi from "joi";
-import { audience, verifyCacheKey, isLocal, publicKeyURL } from "../vars.mjs";
+import { audience, verifyCacheKey, publicKeyURL } from "../vars.mjs";
 
-const cache = cacheManager.caching({
-  store: "memory",
-  max: 10,
-  ttl: 600 /*seconds*/,
-});
+const cache = await caching(
+  memoryStore({
+    max: 10,
+    ttl: 600 /* seconds */,
+  })
+);
 
 /**
  * Create token verifier function
@@ -27,14 +27,10 @@ async function createTokenVerifier() {
 
   let publicKey;
 
-  if (isLocal) {
-    publicKey = fs.readFileSync("./tests/cert/test-public.key");
-  } else {
-    const dl = await got(publicKeyURL);
+  const dl = await got(publicKeyURL);
 
-    if (dl.rawBody) {
-      publicKey = dl.rawBody;
-    }
+  if (dl.rawBody) {
+    publicKey = dl.rawBody;
   }
 
   if (publicKey && audience) {
