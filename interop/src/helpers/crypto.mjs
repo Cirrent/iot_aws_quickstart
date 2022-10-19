@@ -6,7 +6,7 @@
 import { got } from "got";
 import { createVerifier } from "fast-jwt";
 import { caching, memoryStore } from "cache-manager";
-import { X509 } from "jsrsasign";
+import { X509, zulutodate } from "jsrsasign";
 import Joi from "joi";
 import { audience, verifyCacheKey, publicKeyURL } from "../vars.mjs";
 
@@ -59,6 +59,18 @@ async function getSerialNumber(certificate) {
   return serialNumber;
 }
 
+async function isValidExpiration(certificate) {
+  let isValid = false;
+
+  const notBefore = zulutodate(certificate.getNotBefore());
+  const notAfter = zulutodate(certificate.getNotAfter());
+  const cDate = new Date();
+
+  if (cDate >= notBefore && cDate <= notAfter) isValid = true;
+
+  return isValid;
+}
+
 async function getCertificate(certBuf) {
   const certString = certBuf.toString("ascii");
   let x509 = new X509();
@@ -67,4 +79,9 @@ async function getCertificate(certBuf) {
   return x509;
 }
 
-export { createTokenVerifier, getSerialNumber, getCertificate };
+export {
+  createTokenVerifier,
+  getSerialNumber,
+  getCertificate,
+  isValidExpiration,
+};

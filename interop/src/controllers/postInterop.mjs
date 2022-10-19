@@ -11,7 +11,11 @@ import {
 
 import requestMiddleware from "../middleware/request.mjs";
 import { iotPolicy, baseTopic, thingNamePrefix } from "../vars.mjs";
-import { getSerialNumber, getCertificate } from "../helpers/crypto.mjs";
+import {
+  getSerialNumber,
+  getCertificate,
+  isValidExpiration,
+} from "../helpers/crypto.mjs";
 
 const client = new IoTClient();
 
@@ -98,6 +102,27 @@ async function provision(certs) {
         status: "ERROR",
         message:
           "Certificate serial cannot be decoded or is incorrect (only alphanumeric/hyphen/underscore)",
+      });
+      continue;
+    }
+
+    try {
+      const isValid = await isValidExpiration(cert);
+
+      if (!isValid) {
+        resp.push({
+          ref: item.ref,
+          status: "ERROR",
+          message: "Certificate notBefore or notAfter is out of range",
+        });
+        continue;
+      }
+    } catch (err) {
+      console.log("errexpiration:", err);
+      resp.push({
+        ref: item.ref,
+        status: "ERROR",
+        message: "Certificate expiration cannot be decoded",
       });
       continue;
     }
