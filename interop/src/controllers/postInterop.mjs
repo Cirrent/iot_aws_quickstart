@@ -10,7 +10,12 @@ import {
 } from "@aws-sdk/client-iot";
 
 import requestMiddleware from "../middleware/request.mjs";
-import { iotPolicy, baseTopic, thingNamePrefix } from "../vars.mjs";
+import {
+  iotPolicy,
+  baseTopic,
+  thingNamePrefix,
+  compatibilityVersion,
+} from "../vars.mjs";
 import {
   getSerialNumber,
   getCertificate,
@@ -20,7 +25,7 @@ import {
 const client = new IoTClient();
 
 const postInteropSchema = Joi.object().keys({
-  action: Joi.string().valid("status", "provision", "message").required(),
+  action: Joi.string().valid("status", "provision", "message", "info").required(),
   certs: Joi.when("action", {
     is: "provision",
     then: Joi.array().items(
@@ -51,9 +56,20 @@ async function post(req, res, next) {
       resp = await status();
       break;
     }
+    case "info": {
+      resp = await info();
+      break;
+    }
   }
 
   res.send(resp);
+}
+
+async function info() {
+  return {
+    action: "info",
+    compatibilityVersion,
+  };
 }
 
 async function status() {

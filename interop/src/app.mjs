@@ -11,7 +11,7 @@ const app = express();
 const comp = compression();
 
 app.use(comp);
-app.use(express.json());
+app.use(express.json({ limit: "25mb" }));
 app.use(helmet());
 
 app.get("/", (_, res) => res.sendStatus(httpStatus.OK));
